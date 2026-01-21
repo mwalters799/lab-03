@@ -1,25 +1,42 @@
 package com.example.listycitylab3;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements AddCityFragment.AddCityDialogListener{
+public class MainActivity extends AppCompatActivity implements
+        AddCityFragment.AddCityDialogListener, EditCityFragment.EditCityDialogListener{
 
     private ArrayList<City> dataList;
     private ListView cityList;
     private CityArrayAdapter cityAdapter;
 
+    private int cityPosition;
+
     @Override
     public void addCity(City city) {
         cityAdapter.add(city);
+        cityAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void editCity(String newName, String newProv) {
+        City selectedCity = (City) cityAdapter.getItem(cityPosition);
+        assert selectedCity != null;
+        selectedCity.setName(newName);
+        selectedCity.setProvince(newProv);
         cityAdapter.notifyDataSetChanged();
     }
 
@@ -39,6 +56,22 @@ public class MainActivity extends AppCompatActivity implements AddCityFragment.A
         cityList = findViewById(R.id.city_list);
         cityAdapter = new CityArrayAdapter(this, dataList);
         cityList.setAdapter(cityAdapter);
+
+
+        cityList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                City selectedCity = (City) parent.getItemAtPosition(position);
+                cityPosition = position;
+
+                String oldName = selectedCity.getName();
+                String oldProv = selectedCity.getProvince();
+
+                new EditCityFragment().show(getSupportFragmentManager(), "Edit city");
+
+            }
+        });
+
 
         FloatingActionButton fab = findViewById(R.id.button_add_city);
         fab.setOnClickListener(v -> {
